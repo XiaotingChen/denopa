@@ -21,5 +21,70 @@ The current version of deNOPA was developed with python 2.7. Python 3 is not sup
 
 Use the following commands to get deNOPA installed. 
 
-> 
+> git clone https://gitee.com/bxxu/denopa.git
+>
+> cd denopa
+>
+> python setup.py install
+
+### Usage
+
+> usage: denopa [-h] -i INPUT [-o OUTPUT] [-b BUFFERSIZE] [-s CHROMSKIP]
+>               [-n NAME] [-m MAXLEN] [--proc PROC] [-p PARER] [-q QNFR] [-r]
+>
+> Decoding the nucleosome positions with ATAC-seq data at single cell level
+>
+> optional arguments:
+>   -h, --help            show this help message and exit
+>   -i INPUT, --input INPUT
+>                         The input bam files. The files should be sorted. This
+>                         argument could be given multiple times for multiple
+>                         input files.
+>   -o OUTPUT, --output OUTPUT
+>                         The directory where the output files will go to. It
+>                         will be created if not exists (default .).
+>   -b BUFFERSIZE, --bufferSize BUFFERSIZE
+>                         Number of reads buffered in reading the bam file
+>                         (default 1000000).
+>   -s CHROMSKIP, --chromSkip CHROMSKIP
+>                         Names of chromosomes skiped from the processing.
+>                         Multiple values should be sepaated by ',' (default
+>                         chrY,chrM).
+>   -n NAME, --name NAME  The name of the project (default deNOPA).
+>   -m MAXLEN, --maxLen MAXLEN
+>                         The maximun fragment length in the input files
+>                         (default 2000).
+>   --proc PROC           Number of processors used in the analysis (default 1).
+>   -p PARER, --pARER PARER
+>                         The p-value threshold used in determining the ATAC-seq
+>                         reads enriched regions (ARERs, default 0.1)
+>   -q QNFR, --qNFR QNFR  The q-value threshold used in determining the
+>                         nucleosome free regions (NFRs, default 0.1).
+>   -r, --removeIntermediateFiles
+>                         The intermediate files will be removed if this flag is
+>                         set.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

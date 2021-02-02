@@ -115,7 +115,6 @@ def candidateNucleosomes(samFiles,
                                           proc=proc)
     with open("%s_candidates.pkl" % pname, 'wb') as fout:
         pk.dump(num_reads, fout)
-    return
     x = dbscan_model.FinalModel()(num_reads)
     x.to_csv("%s_nucleosomes.txt" % pname, header=None, sep="\t", index=None)
     nfr = determineNFR.NFRDetection(num_reads, smoothFile, nfrQvalue)()
