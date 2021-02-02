@@ -75,6 +75,23 @@ Use the following commands to get deNOPA installed.
 >
 > ​                         The intermediate files will be removed if this flag is set.
 
+### Output files
+
+##### Results
+
+* {NAME}_ARERs.txt: The bet like file of the detected ARERs. The chromosome name, start position, end position, local maximum point, maximum signal and p-value of each ARER were recorded. 
+* {NAME}_NFR.txt: A standard broadPeak formatted bed file for detected NFRs. 
+* {NAME}_nucleosomes.txt: A bed like file for all detected nucleosomes. For each nucleosome, the chromosome name, start position, end position, left inflection point, center position, right inflection point, number of sequencing fragments intersected, number of sequencing fragments covered it, number of Tn5 cutting sites in its inner, p-value indicating whether the number of sequencing fragments covering the nucleosome was large enough, p-value indicating whether the number of Tn5 cutting events in its inner was small enough, the combination of the about two p-values, whether  the nucleosome was dynamic were listed respectively. 
+
+##### Intermediated files
+
+* {NAME}_candidates.pkl: All the detected nucleosome candidates before the DBSCAN outlier detection was applied. 
+* {NAME}_frag_len.pkl: The fragment length distribution of the ATAC-seq library. 
+* {NAME}_pileup_signal.hdf: The raw coverage and cutting sites signal profiles. 
+* {NAME}_smooth.hdf: The smoothed signal profiles and their derivations. 
+
+### Citation
+
 
 
 
