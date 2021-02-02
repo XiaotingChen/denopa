@@ -74,11 +74,11 @@ def candidateNucleosomes(samFiles,
     smoothFile = "%s_smooth.hdf" % pname
     pwd = os.getcwd()
     samFiles = [os.path.abspath(i) for i in samFiles]
+    os.chdir(outputFolder)
+    nocFile = os.path.abspath(smoothFile)
     pileupFile = os.path.abspath(pileupFile)
     smoothFile = os.path.abspath(smoothFile)
-    nocFile = os.path.abspath(smoothFile)
-    os.chdir(outputFolder)
-    with h5py.File(pileupFile) as raw, h5py.File(smoothFile) as smooth:
+    with h5py.File(pileupFile,'r') as raw, h5py.File(smoothFile,'r') as smooth:
         df = signal_track_builder.MakeMaxMinTrack(smooth["coverage/0"],
                                                   smooth["coverage/1"],
                                                   smooth["coverage/2"])()
