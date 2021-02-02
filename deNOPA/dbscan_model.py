@@ -92,7 +92,7 @@ class FinalModel(object):
                         min_samples=self.minpts,
                         algorithm="kd_tree")
         l = dbscan.fit_predict(self.transData)
-        c = Counter(l)  # {k: v for k, v in Counter(l).items() if k >= 0} #
+        c = Counter(l)
         d = max(c.items(), key=lambda u: u[1])[0]
         self.label = (l == d)
 
