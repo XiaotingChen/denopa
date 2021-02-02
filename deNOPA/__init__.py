@@ -18,29 +18,34 @@ import fragmentLengthsDist
 import os
 import sys
 import h5py
-import cPickle as pk
+import pickle as pk
 import multiprocessing as mp
 
 
-def makeSignalTracks(filesIn, folderOut,pname, bufferSize=1000000, chromSkip=""):
+def makeSignalTracks(filesIn,
+                     folderOut,
+                     pname,
+                     bufferSize=1000000,
+                     chromSkip=""):
     lock = mp.Lock()
     filesIn = [os.path.abspath(i) for i in filesIn]
     pwd = os.getcwd()
     os.chdir(folderOut)
     fl = pileup_signals.build_signal_track(filesIn,
-                                           "%s_pileup_signal"%pname,
+                                           "%s_pileup_signal" % pname,
                                            chrom_skip=chromSkip)
-    with open("%s_frag_len.pkl"%pname, 'wb') as fout:
+    with open("%s_frag_len.pkl" % pname, 'wb') as fout:
         pk.dump(fl, fout)
     fl = fragmentLengthsDist.fragmentLengthModel(fl)
-    fl.nucFreeTrack(filesIn, "%s_pileup_signal.hdf"%pname, "%s_smooth.hdf"%pname)
-    proc1 = signal_track_builder.GaussConvolve("%s_pileup_signal.hdf"%pname,
-                                               "%s_smooth.hdf"%pname,
+    fl.nucFreeTrack(filesIn, "%s_pileup_signal.hdf" % pname,
+                    "%s_smooth.hdf" % pname)
+    proc1 = signal_track_builder.GaussConvolve("%s_pileup_signal.hdf" % pname,
+                                               "%s_smooth.hdf" % pname,
                                                "coverage",
                                                72,
                                                lock=lock)
-    proc2 = signal_track_builder.GaussConvolve("%s_pileup_signal.hdf"%pname,
-                                               "%s_smooth.hdf"%pname,
+    proc2 = signal_track_builder.GaussConvolve("%s_pileup_signal.hdf" % pname,
+                                               "%s_smooth.hdf" % pname,
                                                "sites",
                                                24,
                                                lock=lock)
@@ -56,8 +61,7 @@ def makeSignalTracks(filesIn, folderOut,pname, bufferSize=1000000, chromSkip="")
 
 
 def candidateNucleosomes(samFiles,
-                         pileupFile,
-                         smoothFile,
+                         pname,
                          outputFolder,
                          maxLen=2000,
                          leftShift=+4,
@@ -66,6 +70,8 @@ def candidateNucleosomes(samFiles,
                          candPvalue=0.1,
                          nfrQvalue=0.1,
                          arerFile="Candidate_peaks_0.1.bed"):
+    pileupFile = "%s_pileup_signal.hdf" % pname
+    smoothFile = "%s_smooth.hdf" % pname
     pwd = os.getcwd()
     samFiles = [os.path.abspath(i) for i in samFiles]
     pileupFile = os.path.abspath(pileupFile)
@@ -99,8 +105,6 @@ def candidateNucleosomes(samFiles,
                                                            sites_max_min_track,
                                                            min_sep=100,
                                                            max_sep=215)
-        print cand_mg.shape[0]
-    print samFiles
     num_reads = ocsvm_model.calc_ov_frags(samFiles,
                                           cand_mg,
                                           peaks_denovo,
@@ -109,13 +113,13 @@ def candidateNucleosomes(samFiles,
                                           right_shift=rightShift,
                                           smooth_file=smoothFile,
                                           proc=proc)
-    with open("num_reads.pkl", 'wb') as fout:
+    with open("%s_candidates.pkl" % pname, 'wb') as fout:
         pk.dump(num_reads, fout)
     return
     x = dbscan_model.FinalModel()(num_reads)
-    x.to_csv("adATAC_peaks.bed", header=None, sep="\t", index=None)
+    x.to_csv("%s_nucleosomes.txt" % pname, header=None, sep="\t", index=None)
     nfr = determineNFR.NFRDetection(num_reads, smoothFile, nfrQvalue)()
-    nfr.to_csv("adATAC_nfr.txt", header=None, sep="\t", index=None)
+    nfr.to_csv("%s_NFR.txt" % pname, header=None, sep="\t", index=None)
     os.chdir(pwd)
     return
 

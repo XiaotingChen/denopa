@@ -11,7 +11,7 @@ import h5py
 import gc
 import logging
 
-logging.basicConfig(format="%(asctime)s: %(message)s", level=logging.INFO)
+logging.basicConfig(format="%(asctime)s: %(message)s", level=logging.ERROR)
 
 
 def build_signal_track(sam_file_list,

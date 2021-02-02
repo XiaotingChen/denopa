@@ -16,7 +16,7 @@ from scipy.linalg import eigh
 from collections import Counter
 from statsmodels.stats.multitest import multipletests
 import h5py
-import cPickle as pk
+import pickle as pk
 
 
 class FinalModel(object):

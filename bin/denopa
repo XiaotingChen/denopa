@@ -84,6 +84,7 @@ def main():
     deNOPA.candidateNucleosomes(args.input,
                                 args.name,
                                 args.output,
+                                maxLen=args.maxLen
                                 proc=args.proc,
                                 candPvalue=args.pARER,
                                 nfrQvalue=args.qNFR,
