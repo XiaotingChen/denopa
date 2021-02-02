@@ -22,25 +22,25 @@ import cPickle as pk
 import multiprocessing as mp
 
 
-def makeSignalTracks(filesIn, folderOut, bufferSize=1000000, chromSkip=""):
+def makeSignalTracks(filesIn, folderOut,pname, bufferSize=1000000, chromSkip=""):
     lock = mp.Lock()
     filesIn = [os.path.abspath(i) for i in filesIn]
     pwd = os.getcwd()
     os.chdir(folderOut)
     fl = pileup_signals.build_signal_track(filesIn,
-                                           "pileup_signal",
+                                           "%s_pileup_signal"%pname,
                                            chrom_skip=chromSkip)
-    with open("frag_len.pkl", 'wb') as fout:
+    with open("%s_frag_len.pkl"%pname, 'wb') as fout:
         pk.dump(fl, fout)
     fl = fragmentLengthsDist.fragmentLengthModel(fl)
-    fl.nucFreeTrack(filesIn, "pileup_signal.hdf", "smooth.hdf")
-    proc1 = signal_track_builder.GaussConvolve("pileup_signal.hdf",
-                                               "smooth.hdf",
+    fl.nucFreeTrack(filesIn, "%s_pileup_signal.hdf"%pname, "%s_smooth.hdf"%pname)
+    proc1 = signal_track_builder.GaussConvolve("%s_pileup_signal.hdf"%pname,
+                                               "%s_smooth.hdf"%pname,
                                                "coverage",
                                                72,
                                                lock=lock)
-    proc2 = signal_track_builder.GaussConvolve("pileup_signal.hdf",
-                                               "smooth.hdf",
+    proc2 = signal_track_builder.GaussConvolve("%s_pileup_signal.hdf"%pname,
+                                               "%s_smooth.hdf"%pname,
                                                "sites",
                                                24,
                                                lock=lock)

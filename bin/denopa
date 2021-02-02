@@ -1,0 +1,104 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Author  : Matrix
+# @Site    :
+# @File    : denopa.py
+# @Software: PyCharm
+
+import os, sys
+import deNOPA
+import argparse
+
+parser = argparse.ArgumentParser(
+    description=
+    "Decoding the nucleosome positions with ATAC-seq data at single cell level"
+)
+parser.add_argument(
+    "-i",
+    "--input",
+    help=
+    "The input bam files. The files should be sorted. This argument could be given multiple times for multiple input files.",
+    action="append",
+    required=True)
+parser.add_argument(
+    "-o",
+    "--output",
+    help=
+    "The directory where the output files will go to. It will be created if not exists (default .).",
+    default=".")
+parser.add_argument("-b",
+                    "--bufferSize",
+                    help="Number of reads buffered in reading the bam file (default 1000000).",
+                    type=int,
+                    default=1000000)
+parser.add_argument(
+    "-s",
+    "--chromSkip",
+    help=
+    "Names of chromosomes skiped from the processing. Multiple values should be sepaated by ',' (default chrY,chrM).",
+    default="chrM,chrY")
+parser.add_argument("-n",
+                    "--name",
+                    help="The name of the project (default deNOPA). ",
+                    default="deNOPA"),
+parser.add_argument("-m",
+                    "--maxLen",
+                    help="The maximun fragment length in the input files (default 2000). ",
+                    type=int,
+                    default=2000)
+parser.add_argument("--proc",
+                    help="Number of processors used in the analysis (default 1).",
+                    type=int,
+                    default=1)
+parser.add_argument(
+    "-p",
+    "--pARER",
+    help=
+    "The p-value threshold used in determining the ATAC-seq reads enriched regions (ARERs, default 0.1)",
+    type=float,
+    default=0.1)
+parser.add_argument(
+    "-q",
+    "--qNFR",
+    help=
+    "The q-value threshold used in determining the nucleosome free regions (NFRs, default 0.1).",
+    type=float,
+    default=0.1)
+parser.add_argument(
+    "-r",
+    "--removeIntermediateFiles",
+    help="The intermediate files will be removed if this flag is set.",
+    action="store_true")
+
+
+def main():
+    args = parser.parse_args()
+    if not os.path.isdir(args.output):
+        os.makedirs(args.output)
+    chromSkip = set([i.strip() for i in args.chromSkip.split(",")])
+    deNOPA.makeSignalTracks(args.input,
+                            args.output,
+                            args.name,
+                            bufferSize=args.bufferSize,
+                            chromSkip=args.chromSkip)
+    deNOPA.candidateNucleosomes(args.input,
+                                args.name,
+                                args.output,
+                                proc=args.proc,
+                                candPvalue=args.pARER,
+                                nfrQvalue=args.qNFR,
+                                arerFile="%s_ARERs.txt" % args.name)
+    if args.removeIntermediateFiles:
+        file_kept = [
+            "%s_nucleosomes.txt" % args.name,
+            "%s_ARERs.txt" % args.name,
+            "%s_NFR.txt" % args.name
+        ]
+        for i in os.listdir(args.output):
+            if not i in file_kept:
+                os.remove(os.path.join(args.output, i))
+    return
+
+
+if __name__ == "__main__":
+    main()
