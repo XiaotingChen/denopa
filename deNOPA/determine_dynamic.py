@@ -4,7 +4,7 @@
 # @Site    : 
 # @File    : determine_dynamic.py
 # @Software: PyCharm
-
+from __future__ import print_function
 from scipy import *
 import h5py
 from scipy.stats import binom

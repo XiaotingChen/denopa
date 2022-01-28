@@ -4,17 +4,17 @@
 # @Site    :
 # @File    : __init__.py
 # @Software: PyCharm
-
-import pileup_signals
-import smoothed_signal
-import call_peak  # , aid_scripts
-import signal_track_builder
-import candidate_mm_process
-import ocsvm_model
-import determine_dynamic
-import determineNFR
-import dbscan_model
-import fragmentLengthsDist
+from __future__ import print_function
+from . import pileup_signals
+from . import smoothed_signal
+from . import call_peak  # , aid_scripts
+from . import signal_track_builder
+from . import candidate_mm_process
+from . import ocsvm_model
+from . import determine_dynamic
+from . import determineNFR
+from . import dbscan_model
+from . import fragmentLengthsDist
 import os
 import sys
 import h5py
@@ -78,7 +78,8 @@ def candidateNucleosomes(samFiles,
     nocFile = os.path.abspath(smoothFile)
     pileupFile = os.path.abspath(pileupFile)
     smoothFile = os.path.abspath(smoothFile)
-    with h5py.File(pileupFile,'r') as raw, h5py.File(smoothFile,'r') as smooth:
+    with h5py.File(pileupFile, 'r') as raw, h5py.File(smoothFile,
+                                                      'r') as smooth:
         df = signal_track_builder.MakeMaxMinTrack(smooth["coverage/0"],
                                                   smooth["coverage/1"],
                                                   smooth["coverage/2"])()
@@ -86,7 +87,7 @@ def candidateNucleosomes(samFiles,
                                                         candPvalue,
                                                         merge_dist=1000,
                                                         proc=1)
-        print peaks_denovo.shape[0]
+        print(peaks_denovo.shape[0])
         peaks_denovo.to_csv(arerFile, header=None, sep="\t", index=None)
         sites_max_min_track = signal_track_builder.make_max_min_track(
             smooth["sites/0"], smooth["sites/1"])
@@ -145,7 +146,7 @@ def shell():
         for j in range(1, 10):
             try:
                 calcNUC("%s/%d" % (i, j))
-                print "%s/%d" % (i, j)
+                print("%s/%d" % (i, j))
             except:
                 y.append((i, j))
             finally:

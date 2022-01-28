@@ -4,7 +4,7 @@
 # @Site    :
 # @File    : dbscan_model.py
 # @Software: PyCharm
-
+from __future__ import print_function
 import sys
 import os
 from scipy import *
@@ -34,8 +34,9 @@ class FinalModel(object):
         d = data.apply(lambda v: log(abs(v[5] - v[1] - 156) / 157.0 + 1),
                        axis=1)
 
-        def fun(x):            return (x <= 0) * ((2 * norm(0, 1).pdf(0)) * x) + \
-(x > 0) * 2 * (norm(0, 1).cdf(x) - 0.5)
+        def fun(x):
+            return (x <= 0) * ((2 * norm(0, 1).pdf(0)) *
+                               x) + (x > 0) * 2 * (norm(0, 1).cdf(x) - 0.5)
 
         def AT(a, b):
             m = b[0]
@@ -171,7 +172,7 @@ class CandidatesWithNOC(object):
                 t = hdf[self.track][c][a:b]
                 mx = max(t)
                 w = where(t == mx)[0]
-                w = w[len(w) / 2] + a
+                w = w[int(len(w) / 2)] + a
                 y.append([w, mx, (mx - mean(t)) / std(t), len(t)])
                 if ix % 1000 == 0:
                     sys.stdout.write("\r%d/%d" % (ix, self.cand.shape[0]))
@@ -190,7 +191,7 @@ class CandidatesWithNOC(object):
 
     def getOutPut(self, alpha=0.1):
         flag = asarray([i[-2] > alpha for i in self.cand[14]])
-        print "%d / %d" % (sum(flag), len(flag))
+        print("%d / %d" % (sum(flag), len(flag)))
         y = self.cand.loc[flag, :].copy()
         return y.sort_values([0, 1, 2])
 
@@ -258,6 +259,6 @@ class varCandidatesWithNOC(object):
     def getOutPut(self, alpha=0.1):
         flag = asarray([i[1] > alpha
                         for i in self.cand[14]]) & (self.cand[8] > 0)
-        print "%d / %d" % (sum(flag), len(flag))
+        print("%d / %d" % (sum(flag), len(flag)))
         y = self.cand.loc[flag, :].copy()
         return y.sort_values([0, 1, 2])

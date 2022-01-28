@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 # @Time    : 18-5-27 下午5:06
 # @Author  : Matrix
-# @Site    : 
+# @Site    :
 # @File    : call_peak.py
 # @Software: PyCharm
-
+from __future__ import print_function
 import scipy as sp
 from scipy import optimize
 from scipy.stats import gamma
@@ -15,15 +15,17 @@ import multiprocessing as mp
 def loss_fun(p, q):
     a, l = p
     x = [gamma.cdf(i, a, scale=l) for i in q]
-    x = [(i - j) ** 2 for i, j in zip(x, [0.25, 0.5, 0.75])]
+    x = [(i - j)**2 for i, j in zip(x, [0.25, 0.5, 0.75])]
     return sum(x)
 
 
 def get_para(din):
     q = [sp.percentile(din, i) for i in [25, 50, 75]]
     aInit, _, lInit = gamma.fit(din[din > 0], floc=0)
-    y = optimize.minimize(loss_fun, x0=sp.asarray([aInit, lInit]),
-                          args=(q,), method="Nelder-Mead")
+    y = optimize.minimize(loss_fun,
+                          x0=sp.asarray([aInit, lInit]),
+                          args=(q, ),
+                          method="Nelder-Mead")
     assert y.success, "The estimation does not converge."
     # assert y.fun <= 0.01, "The last value %.2f is too large." % y.fun
     return y.x
@@ -60,7 +62,10 @@ def __call_for_a_chrom(para):
             # else:
             #     peaks[-1].append(k)
             # The policy of merging mearby major maxs is changed to check if the vally between them are deep enough.
-            if any([data[i, 2] < 0 and data[i, 1] <= minth for i in range(peaks[-1][-1], k)]):
+            if any([
+                    data[i, 2] < 0 and data[i, 1] <= minth
+                    for i in range(peaks[-1][-1], k)
+            ]):
                 peaks.append([k])
             else:
                 peaks[-1].append(k)
@@ -86,8 +91,9 @@ def __call_for_a_chrom(para):
             rdx = data.shape[0] - 1
         extend_peaks.append([ldx, rdx])
     if merge_dist == None:
-        merge_dist = sp.mean([data[b, 0] - data[a, 0] for a, b in extend_peaks]) * 4
-    print "The merge distance is %f" % merge_dist
+        merge_dist = sp.mean(
+            [data[b, 0] - data[a, 0] for a, b in extend_peaks]) * 4
+    print("The merge distance is %f" % merge_dist)
     final_peaks = []
     extend_peaks.sort(key=lambda u: u[0])
     for pk in extend_peaks:
@@ -103,10 +109,7 @@ def __call_for_a_chrom(para):
         s = sp.argmax(data[(k1):(k2), 1]) + k1
         m = data[s, 1]
         p = 1 - gamma.cdf(m, pmax[0], scale=pmax[1])
-        peak_pos.append([
-            chrname, data[k1, 0], data[k2, 0],
-            data[s, 0], m, p
-        ])
+        peak_pos.append([chrname, data[k1, 0], data[k2, 0], data[s, 0], m, p])
     peak_pos = pd.DataFrame(peak_pos)
     peak_pos[1] = sp.asarray(peak_pos[1], dtype=int)
     peak_pos[2] = sp.asarray(peak_pos[2], dtype=int)
@@ -115,8 +118,13 @@ def __call_for_a_chrom(para):
     return peak_pos.loc[f, :].copy()
 
 
-def call_candidate_regions(max_min_track, p_value, p_min=0.5, merge_dist=None, proc=1):
-    params = [(k, v, p_value, p_min, merge_dist) for k, v in max_min_track.items()]
+def call_candidate_regions(max_min_track,
+                           p_value,
+                           p_min=0.5,
+                           merge_dist=None,
+                           proc=1):
+    params = [(k, v, p_value, p_min, merge_dist)
+              for k, v in max_min_track.items()]
     pool = mp.Pool(proc)
     y = map(__call_for_a_chrom, params)
     pool.close()

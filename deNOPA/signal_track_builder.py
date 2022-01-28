@@ -4,7 +4,7 @@
 # @Site    :
 # @File    : signal_track_builder.py
 # @Software: PyCharm
-
+from __future__ import print_function
 from scipy import *
 from scipy.stats import norm
 import h5py
@@ -117,10 +117,10 @@ class MakeMaxMinTrack(object):
             ia = ix - 1
             ib = ix + 1
             while values[ia][2] == 1:
-                print "There are not local minimar between two maximars"
+                print("There are not local minimar between two maximars")
                 ia -= 1
             while values[ib][2] == 1:
-                print "There are not local minimar between two maximars"
+                print("There are not local minimar between two maximars")
                 ib += 1
             self.values[chrom].extend(
                 [values[ia], values[ix], values[ib]]
@@ -226,7 +226,7 @@ def split_max_min_into_peaks(max_min_track, peaks):
     for k, v in pk_split.items():
         a1 = searchsorted(max_min_track[k][:, 0], list(v[1]), side="left")
         a2 = searchsorted(max_min_track[k][:, 0], list(v[2]), side="right")
-        out.extend([[idx, a, b] for idx, a, b in it.izip(v.index, a1, a2)])
+        out.extend([[idx, a, b] for idx, a, b in zip(v.index, a1, a2)])
     out.sort(key=lambda u: u[0])
     out = asarray(out)
     pks["left"] = out[:, 1]

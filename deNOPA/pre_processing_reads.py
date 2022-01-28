@@ -4,11 +4,11 @@
 # @Site    : 
 # @File    : pre_processing_reads.py
 # @Software: PyCharm
-
+from __future__ import print_function
 from scipy import *
 import h5py
 import pysam
-import aid_scripts
+from . import aid_scripts
 import gc
 
 
@@ -61,7 +61,7 @@ def test_make_singal_track(sam_file, signal_file, chrom_mask=(), shift_plus=4, s
                     site_sig[max(0, p2 - extend):min(sq[r.reference_name], p2 + 1 + extend)] += 1
                     del rds[r.query_name]
                     idx += 1
-                    print idx
+                    print(idx)
         hdf.create_dataset("coverage/raw/%s" % chrom_name, data=cov_sig)
         hdf.create_dataset("sites/raw/%s" % chrom_name, data=site_sig)
     return

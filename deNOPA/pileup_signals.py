@@ -4,7 +4,7 @@
 # @Site    :
 # @File    : pileup_signals.py
 # @Software: PyCharm
-
+from __future__ import print_function
 import pysam
 import numpy as np
 import h5py

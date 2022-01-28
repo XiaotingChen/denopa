@@ -8,7 +8,7 @@
 
 ##### Pre-requirements
 
-The current version of deNOPA was developed with python 2.7. Python 3 is not supported by now. Besides a python environment, you need also get the following pre-requirements installed:
+The deNOPA package was initially developed using python 2.7. The support of python 3 has also been added. The package was tested under the default environment of Anaconda-5.3.1, both python 2.7 and python 3.7 version. Besides a python environment, the following dependencies were also needed. 
 
 * numpy
 * scipy
@@ -17,63 +17,77 @@ The current version of deNOPA was developed with python 2.7. Python 3 is not sup
 * sklearn
 * statsmodels
 
-##### Installation
+Please make sure they were properly installed ahead of the deNOPA package itself. 
+
+##### Install from source code
 
 Use the following commands to get deNOPA installed. 
 
-> git clone https://gitee.com/bxxu/denopa.git
->
-> cd denopa
->
-> python setup.py install
+```
+git clone https://gitee.com/bxxu/denopa.git
+
+cd denopa
+
+python setup.py install
+```
+
+##### Install from pre-built files. 
+
+Download the compatible wheel file from the dist directory in this repo according to your version of python. Then get it installed using the following command:
+
+```
+pip install deNOPA-x.y.z-pyX-none-any.whl
+```
 
 ### Usage
 
-> usage: denopa [-h] -i INPUT [-o OUTPUT] [-b BUFFERSIZE] [-s CHROMSKIP] [-n NAME] [-m MAXLEN] [--proc PROC] [-p PARER] [-q QNFR] [-r]
->
-> Decoding the nucleosome positions with ATAC-seq data at single cell level
->
-> optional arguments:
->
->   -h, --help            show this help message and exit
->
->   -i INPUT, --input INPUT
->
-> ​                         The input bam files. The files should be sorted. This argument could be given multiple times for multiple input files.
->
->   -o OUTPUT, --output OUTPUT
->
-> ​                         The directory where the output files will go to. It will be created if not exists (default .).
->
->   -b BUFFERSIZE, --bufferSize BUFFERSIZE
->
-> ​                         Number of reads buffered in reading the bam file (default 1000000).
->
->   -s CHROMSKIP, --chromSkip CHROMSKIP
->
-> ​                         Names of chromosomes skiped from the processing. Multiple values should be sepaated by ',' (default chrY,chrM).
->
->   -n NAME, --name NAME  The name of the project (default deNOPA).
->
->   -m MAXLEN, --maxLen MAXLEN
->
-> ​                         The maximun fragment length in the input files (default 2000).
->
->   --proc PROC
->
-> ​                         Number of processors used in the analysis (default 1).
->
->   -p PARER, --pARER PARER
->
-> ​                         The p-value threshold used in determining the ATAC-seq reads enriched regions (ARERs, default 0.1).
->
->   -q QNFR, --qNFR QNFR  
->
-> ​                         The q-value threshold used in determining the nucleosome free regions (NFRs, default 0.1).
->
->   -r, --removeIntermediateFiles
->
-> ​                         The intermediate files will be removed if this flag is set.
+```
+usage: denopa [-h] -i INPUT [-o OUTPUT] [-b BUFFERSIZE] [-s CHROMSKIP] [-n NAME] [-m MAXLEN] [--proc PROC] [-p PARER] [-q QNFR] [-r]
+
+Decoding the nucleosome positions with ATAC-seq data at single cell level
+
+optional arguments:
+
+-h, --help            show this help message and exit
+
+-i INPUT, --input INPUT
+
+​                         The input bam files. The files should be sorted. This argument could be given multiple times for multiple input files.
+
+-o OUTPUT, --output OUTPUT
+
+​                         The directory where the output files will go to. It will be created if not exists (default .).
+
+-b BUFFERSIZE, --bufferSize BUFFERSIZE
+
+​                         Number of reads buffered in reading the bam file (default 1000000).
+
+-s CHROMSKIP, --chromSkip CHROMSKIP
+
+​                         Names of chromosomes skiped from the processing. Multiple values should be sepaated by ',' (default chrY,chrM).
+
+-n NAME, --name NAME  The name of the project (default deNOPA).
+
+-m MAXLEN, --maxLen MAXLEN
+
+​                         The maximun fragment length in the input files (default 2000).
+
+--proc PROC
+
+​                         Number of processors used in the analysis (default 1).
+
+-p PARER, --pARER PARER
+
+​                         The p-value threshold used in determining the ATAC-seq reads enriched regions (ARERs, default 0.1).
+
+-q QNFR, --qNFR QNFR  
+
+​                         The q-value threshold used in determining the nucleosome free regions (NFRs, default 0.1).
+
+-r, --removeIntermediateFiles
+
+​                         The intermediate files will be removed if this flag is set.
+```
 
 ### Output files
 
@@ -92,7 +106,13 @@ Use the following commands to get deNOPA installed.
 
 ### Citation
 
+Please add the following citation if you use deNOPA in your study: 
 
+> Xu B, Li X, Gao X, et al. DeNOPA: decoding nucleosome positions sensitively with sparse ATAC-seq data[J]. Briefings in Bioinformatics, 2022, 23(1): bbab469.
+
+### Contacts
+
+You can send questions, discussions, bug reports and other useful information to Zhihua Zhang (zangzhihua@big.ac.cn) or Bingxiang Xu (xubingxiang@sus.edu.cn).
 
 
 
