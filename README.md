@@ -19,7 +19,7 @@ The deNOPA package was initially developed using python 2.7. The support of pyth
 * sklearn
 * statsmodels
 
-Please make sure they were properly installed ahead of the deNOPA package itself. 
+Please make sure they were properly installed ahead of the deNOPA package itself. Please also use the python 3 version as far as possible. Only this version is maintained now. 
 
 ##### Install from source code
 
@@ -42,6 +42,8 @@ pip install deNOPA-x.y.z-pyX-none-any.whl
 ```
 
 ### Usage
+
+*The bam files should be indexed using samtools before running the package. *
 
 ```
 usage: denopa [-h] -i INPUT [-o OUTPUT] [-b BUFFERSIZE] [-s CHROMSKIP] [-n NAME] [-m MAXLEN] [--proc PROC] [-p PARER] [-q QNFR] [-r]
