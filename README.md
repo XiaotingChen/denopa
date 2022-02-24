@@ -44,6 +44,7 @@ pip install deNOPA-x.y.z-pyX-none-any.whl
 ### Usage
 
 *The bam files should be indexed using samtools before running the package. *
+`The package was only tested in alignments from bowtie2. The compatibility to other aligners is not guaranteed. `
 
 ```
 usage: denopa [-h] -i INPUT [-o OUTPUT] [-b BUFFERSIZE] [-s CHROMSKIP] [-n NAME] [-m MAXLEN] [--proc PROC] [-p PARER] [-q QNFR] [-r]
