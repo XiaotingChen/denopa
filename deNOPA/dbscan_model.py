@@ -174,9 +174,6 @@ class CandidatesWithNOC(object):
                 w = where(t == mx)[0]
                 w = w[int(len(w) / 2)] + a
                 y.append([w, mx, (mx - mean(t)) / std(t), len(t)])
-                if ix % 1000 == 0:
-                    sys.stdout.write("\r%d/%d" % (ix, self.cand.shape[0]))
-                    sys.stdout.flush()
         y = asarray(y)
         flag = ((isnan(y)).sum(axis=1) == 0)
         y = y[flag, :].copy()
@@ -246,9 +243,6 @@ class varCandidatesWithNOC(object):
                     flag.append(True)
                 else:
                     flag.append(False)
-                if ix % 1000 == 0:
-                    sys.stdout.write("\r%d" % ix)
-                    sys.stdout.flush()
         y = asarray(y)
         self.cand = self.cand.loc[flag, :].copy()
         self.cand[3] = y[:, 0].astype(int)

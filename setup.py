@@ -12,9 +12,9 @@ with open("README.md") as fin:
 
 setup(
     name="deNOPA",
-    version="1.0.1",
+    version="1.0.2",
     author="Bingxiang Xu",
-    author_email="xubx@big.ac.cn",
+    author_email="xubingxiang@sus.edu.cn",
     maintainer="Zhihua Zhang",
     maintainer_email="zhangzhihua@big.ac.cn",
     url="https://gitee.com/bxxu/denopa",

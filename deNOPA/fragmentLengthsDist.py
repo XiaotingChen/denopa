@@ -25,6 +25,7 @@ class EMSmoothFragLenDist(object):
         Gaussian distributions representing nucleosome free and 1, 2 and 3 nucleosomes.
         Note: here the fragment lengths has been shifted.
     """
+
     def __init__(self, fl, n_nucleo):
         self.n_nuc = n_nucleo
         self.nums = copy.deepcopy(pd.Series(fl))
@@ -36,8 +37,8 @@ class EMSmoothFragLenDist(object):
         self.values = asarray(self.fl)
         self.params = [
             1, 50,
-            arange(self.n_nuc) * 200 + 200,
-            asarray([50 for i in range(self.n_nuc)]),
+            linspace(200, max(self.nums.index), self.n_nuc + 2)[1:-1],
+            asarray([200 for i in range(self.n_nuc)]),
             asarray([0.9 / self.n_nuc for i in range(self.n_nuc)])
         ]
         self.rp = None
@@ -111,16 +112,30 @@ class EMSmoothFragLenDist(object):
             ones_like(self.params[4])
         ], self.params]
         ix = 0
+        early_stop = -1
         try:
             while mean(
                     abs(asarray(params[0][-1]) - asarray(params[1][-1])) /
                     asarray(params[0][-1])) > 0.0001:
-                gm = self.e_step(params[-1])
+                try:
+                    gm = self.e_step(params[-1])
+                except ValueError:
+                    print(
+                        "Model with %d nucleosomes early stop because overfitting."
+                        % self.n_nuc)
+                    early_stop = -2
+                    break
+                if any(isnan(gm)):
+                    print(
+                        "Model with %d nucleosomes early stop because lack of fit."
+                        % self.n_nuc)
+                    early_stop = -2
+                    break
                 params.append(self.m_step(gm))
                 del params[0]
                 ix += 1
                 assert ix <= 10000
-            self.params = params[-1]
+            self.params = params[early_stop]
             self.rp = self.e_step(self.params)
             return self
         except AssertionError as ex:
@@ -201,9 +216,6 @@ class EMSmoothFragLenDist(object):
                         freeTracks[r1.reference_name][p1:p2] += nucFree[p2 -
                                                                         p1]
                         ix += 1
-                        if ix % 1000 == 0:
-                            sys.stdout.write("\r%d" % ix)
-                            sys.stdout.flush()
                     except KeyError:
                         rds[r2.query_name] = r2
         with h5py.File(outputFile, 'a') as hdf:

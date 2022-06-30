@@ -108,6 +108,10 @@ optional arguments:
 * {NAME}_pileup_signal.hdf: The raw coverage and cutting sites signal profiles. 
 * {NAME}_smooth.hdf: The smoothed signal profiles and their derivations. 
 
+### Test data
+
+Sparse data does not mean no data. When reads are too sparse, deNOPA cannot detect any ARER and will certainly fail. The package has been tested to work for data with 600K or more read pairs for *Saccharomyces cerevisiae* or 10M  or more read pairs for human or mouse. Here we provided a test dataset in the "test" directory which contained about 25% (604K) aligned fragments in SRR1822145, together with the results. 
+
 ### Citation
 
 Please add the following citation if you use deNOPA in your study: 
