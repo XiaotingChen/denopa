@@ -14,6 +14,7 @@ import copy
 import warnings
 import pysam
 import h5py
+import re
 from . import signal_track_builder
 
 warnings.filterwarnings("ignore")
@@ -25,7 +26,6 @@ class EMSmoothFragLenDist(object):
         Gaussian distributions representing nucleosome free and 1, 2 and 3 nucleosomes.
         Note: here the fragment lengths has been shifted.
     """
-
     def __init__(self, fl, n_nucleo):
         self.n_nuc = n_nucleo
         self.nums = copy.deepcopy(pd.Series(fl))
@@ -189,6 +189,7 @@ class EMSmoothFragLenDist(object):
                      outputFile,
                      smoothFile,
                      chromSkip="",
+                     chrom_inculde="",
                      leftShift=+4,
                      rightShift=-5):
         nucFree = dict(
@@ -198,7 +199,8 @@ class EMSmoothFragLenDist(object):
             freeTracks = {
                 k: zeros(v)
                 for k, v in zip(sam.references, sam.lengths)
-                if not k in chromSkip
+                if (not k in chromSkip) and (
+                    re.sub(chrom_inculde, "", k) == "")
             }
         for samFile in samFiles:
             with pysam.AlignmentFile(samFile) as sam:
@@ -206,16 +208,16 @@ class EMSmoothFragLenDist(object):
                 ix = 0
                 for r2 in sam.fetch(until_eof=True):
                     try:
-                        if r2.reference_name in chromSkip:
-                            continue
-                        r1 = rds.pop(r2.query_name)
-                        p1 = min(r1.reference_start,
-                                 r2.reference_start) + leftShift
-                        p2 = max(r1.reference_end,
-                                 r2.reference_end) + rightShift
-                        freeTracks[r1.reference_name][p1:p2] += nucFree[p2 -
-                                                                        p1]
-                        ix += 1
+                        if r2.reference_name in freeTracks:
+                            r1 = rds.pop(r2.query_name)
+                            p1 = min(r1.reference_start,
+                                     r2.reference_start) + leftShift
+                            p2 = max(r1.reference_end,
+                                     r2.reference_end) + rightShift
+                            freeTracks[r1.reference_name][p1:p2] += nucFree[p2
+                                                                            -
+                                                                            p1]
+                            ix += 1
                     except KeyError:
                         rds[r2.query_name] = r2
         with h5py.File(outputFile, 'a') as hdf:

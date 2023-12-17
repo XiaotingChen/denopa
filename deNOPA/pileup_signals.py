@@ -9,6 +9,7 @@ import pysam
 import numpy as np
 import h5py
 import gc
+import re
 import logging
 
 logging.basicConfig(format="%(asctime)s: %(message)s", level=logging.ERROR)
@@ -17,6 +18,7 @@ logging.basicConfig(format="%(asctime)s: %(message)s", level=logging.ERROR)
 def build_signal_track(sam_file_list,
                        out_put_prefix,
                        chrom_skip=None,
+                       chrom_inculde="",
                        buffer_size=1000000,
                        left_shift=+4,
                        right_shift=-5,
@@ -40,7 +42,8 @@ def build_signal_track(sam_file_list,
         try:
             chrom_size = {
                 k: v[0]
-                for k, v in chrom_size.items() if not k in chrom_skip
+                for k, v in chrom_size.items() if (not k in chrom_skip) and (
+                    re.sub(chrom_inculde, "", k) == "")
             }
         except TypeError:
             chrom_size = {k: v[0] for k, v in chrom_size.items()}
@@ -79,7 +82,7 @@ def build_signal_track(sam_file_list,
                             fout["sites/%s" % current_chrom][
                                 buffer_start:buffer_stop] += buffer_ste
                             raise NameError
-                    except NameError:
+                    except (NameError, UnboundLocalError):
                         # Initiate for a new chromosome.
                         current_chrom = r.reference_name
                         # A buffer (buffer_cov or buffer_ste represent a chromosome location from buffer_start

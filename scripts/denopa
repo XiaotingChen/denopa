@@ -26,30 +26,41 @@ parser.add_argument(
     help=
     "The directory where the output files will go to. It will be created if not exists (default .).",
     default=".")
-parser.add_argument("-b",
-                    "--bufferSize",
-                    help="Number of reads buffered in reading the bam file (default 1000000).",
-                    type=int,
-                    default=1000000)
+parser.add_argument(
+    "-b",
+    "--bufferSize",
+    help="Number of reads buffered in reading the bam file (default 1000000).",
+    type=int,
+    default=1000000)
 parser.add_argument(
     "-s",
     "--chromSkip",
     help=
     "Names of chromosomes skiped from the processing. Multiple values should be sepaated by ',' (default chrY,chrM).",
     default="chrM,chrY")
+
+parser.add_argument(
+    "-c",
+    "--chromInclude",
+    help=
+    "The regular expression of chromosome names included in the analysis, for human genome 'chr[1-9][0-9]{,1}|chrX' should be enough. It can be combined with -s.",
+    default="chr[1-9][0-9]{,1}|chrX")
+
 parser.add_argument("-n",
                     "--name",
                     help="The name of the project (default deNOPA). ",
                     default="deNOPA"),
-parser.add_argument("-m",
-                    "--maxLen",
-                    help="The maximun fragment length in the input files (default 2000). ",
-                    type=int,
-                    default=2000)
-parser.add_argument("--proc",
-                    help="Number of processors used in the analysis (default 1).",
-                    type=int,
-                    default=1)
+parser.add_argument(
+    "-m",
+    "--maxLen",
+    help="The maximun fragment length in the input files (default 2000). ",
+    type=int,
+    default=2000)
+parser.add_argument(
+    "--proc",
+    help="Number of processors used in the analysis (default 1).",
+    type=int,
+    default=1)
 parser.add_argument(
     "-p",
     "--pARER",
@@ -80,6 +91,7 @@ def main():
                             args.output,
                             args.name,
                             bufferSize=args.bufferSize,
+                            chromInculde=args.chromInclude,
                             chromSkip=args.chromSkip)
     deNOPA.candidateNucleosomes(args.input,
                                 args.name,

@@ -26,19 +26,24 @@ def makeSignalTracks(filesIn,
                      folderOut,
                      pname,
                      bufferSize=1000000,
-                     chromSkip=""):
+                     chromSkip="",
+                     chromInculde=""):
     lock = mp.Lock()
     filesIn = [os.path.abspath(i) for i in filesIn]
     pwd = os.getcwd()
     os.chdir(folderOut)
     fl = pileup_signals.build_signal_track(filesIn,
                                            "%s_pileup_signal" % pname,
-                                           chrom_skip=chromSkip)
+                                           chrom_skip=chromSkip,
+                                           chrom_inculde=chromInculde)
     with open("%s_frag_len.pkl" % pname, 'wb') as fout:
         pk.dump(fl, fout)
     fl = fragmentLengthsDist.fragmentLengthModel(fl)
-    fl.nucFreeTrack(filesIn, "%s_pileup_signal.hdf" % pname,
-                    "%s_smooth.hdf" % pname)
+    fl.nucFreeTrack(filesIn,
+                    "%s_pileup_signal.hdf" % pname,
+                    "%s_smooth.hdf" % pname,
+                    chrom_inculde=chromInculde,
+                    chromSkip=chromSkip)
     proc1 = signal_track_builder.GaussConvolve("%s_pileup_signal.hdf" % pname,
                                                "%s_smooth.hdf" % pname,
                                                "coverage",

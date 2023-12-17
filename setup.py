@@ -12,7 +12,7 @@ with open("README.md") as fin:
 
 setup(
     name="deNOPA",
-    version="1.0.2",
+    version="1.0.3",
     author="Bingxiang Xu",
     author_email="xubingxiang@sus.edu.cn",
     maintainer="Zhihua Zhang",
@@ -25,5 +25,5 @@ setup(
     python_requires=">=2.7",
     packages=['deNOPA'],
     install_requires=[
-        "numpy", "scipy", "pandas", "h5py", "pysam", "sklearn", "statsmodels"
+        "numpy", "scipy", "pandas", "h5py", "pysam", "scikit-learn", "statsmodels"
     ])
