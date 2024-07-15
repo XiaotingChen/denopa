@@ -12,28 +12,29 @@ import h5py
 import pandas as pd
 from . import signal_track_builder
 from . import call_peak
+from numpy import *
 
 
 class NFRDetection(object):
     def __init__(self, numReads, shortTrack, qvalue, trackName="short"):
         self.numReads = numReads.copy().sort_values([0, 1, 5])
         self.qvalue = qvalue
-        with h5py.File(shortTrack, 'r') as hdf:
+        with h5py.File(shortTrack, "r") as hdf:
             self.mms = signal_track_builder.MakeMaxMinTrack(
-                hdf["%s/0" % trackName], hdf["%s/1" % trackName],
-                hdf["%s/2" % trackName])()
+                hdf["%s/0" % trackName],
+                hdf["%s/1" % trackName],
+                hdf["%s/2" % trackName],
+            )()
         self.vmaxs = {}
 
     def get_pmax(self):
         self.vmaxs = {}
         for k, data in self.mms.items():
             pmax = call_peak.get_para(data[data[:, 2] > 0, 1])
-            pvalues = asarray([
-                stats.gamma.sf(data[data[:, 2] > 0, 1], pmax[0], scale=pmax[1])
-            ]).T
-            self.vmaxs[k] = append(data[data[:, 2] > 0, :][:, [0, 1]],
-                                   pvalues,
-                                   axis=1)
+            pvalues = asarray(
+                [stats.gamma.sf(data[data[:, 2] > 0, 1], pmax[0], scale=pmax[1])]
+            ).T
+            self.vmaxs[k] = append(data[data[:, 2] > 0, :][:, [0, 1]], pvalues, axis=1)
 
     def __call__(self, *args, **kwargs):
         if not self.vmaxs:
@@ -51,7 +52,7 @@ class NFRDetection(object):
             b1 = b1[f].copy()
             f1 = searchsorted(a5, self.vmaxs[chrom][:, 0], side="left")
             f2 = searchsorted(b1, self.vmaxs[chrom][:, 0], side="right")
-            f = (f1 - f2 == 1)
+            f = f1 - f2 == 1
             z = {}
             for i, j, v in zip(a5[f2[f]], b1[f2[f]], self.vmaxs[chrom][f, :]):
                 z.setdefault((i, j), []).append(v)
@@ -61,12 +62,14 @@ class NFRDetection(object):
         z = [
             list(y[0]),
             list(y[1] + 1),
-            list(y[2]), ["ATAC_%d" % (1 + k) for k in range(y.shape[0])],
-            [0 for k in range(y.shape[0])], ["." for k in range(y.shape[0])],
+            list(y[2]),
+            ["ATAC_%d" % (1 + k) for k in range(y.shape[0])],
+            [0 for k in range(y.shape[0])],
+            ["." for k in range(y.shape[0])],
             list(y[4]),
             list(y[5]),
             list(multipletests(y[5], self.qvalue, method="fdr_bh")[1]),
-            list(y[3] - (y[1] + 1))
+            list(y[3] - (y[1] + 1)),
         ]
         z = pd.DataFrame(z).T
         z[1] = z[1].astype(int)

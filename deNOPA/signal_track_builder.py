@@ -13,6 +13,7 @@ import gc
 import itertools as it
 import multiprocessing as mp
 import logging
+from numpy import *
 
 logging.basicConfig(format="%(asctime)s: %(message)s", level=logging.INFO)
 
@@ -31,7 +32,9 @@ def gauss_convolve(track_in, track_out):
 
 
 class GaussConvolve(mp.Process):
-    def __init__(self, track_in, track_out, track_name, scale, lock=None, third_dev=True):
+    def __init__(
+        self, track_in, track_out, track_name, scale, lock=None, third_dev=True
+    ):
         super(GaussConvolve, self).__init__()
         self.logger = logging.getLogger(__name__)
         self.track_in = track_in
@@ -46,9 +49,13 @@ class GaussConvolve(mp.Process):
         h = arange(-3 * int(scale), 3 * int(scale) + 1, dtype=float64)
         y = {
             0: lambda: norm.pdf(h, scale=scale),
-            1: lambda: -1 / (scale ** 2) * h * norm.pdf(h, scale=scale),
-            2: lambda: 1 / (scale ** 4) * (h ** 2 - scale ** 2) * norm.pdf(h, scale=scale),
-            3: lambda: (3 * h / scale ** 4 - h ** 3 / scale ** 6) * norm.pdf(h, scale=scale)
+            1: lambda: -1 / (scale**2) * h * norm.pdf(h, scale=scale),
+            2: lambda: 1
+            / (scale**4)
+            * (h**2 - scale**2)
+            * norm.pdf(h, scale=scale),
+            3: lambda: (3 * h / scale**4 - h**3 / scale**6)
+            * norm.pdf(h, scale=scale),
         }[d]()
         y[0] /= 2
         y[-1] /= 2
@@ -62,23 +69,25 @@ class GaussConvolve(mp.Process):
                 kernels = [self.get_gauss_kernel(d) for d in range(4)]
             else:
                 kernels = [self.get_gauss_kernel(d) for d in range(3)]
-        with h5py.File(self.track_in, 'r') as tin:
+        with h5py.File(self.track_in, "r") as tin:
             for idx, g in enumerate(kernels):
                 for k, v in tin[self.track_name].items():
                     v = asarray(v)
                     y = convolve(v, g, mode="full")
-                    y = y[(3 * self.scale):(len(v) + 3 * self.scale)]
-                    y[:(6 * self.scale + 1)] = 0
-                    y[-(6 * self.scale + 1):] = 0
+                    y = y[(3 * self.scale) : (len(v) + 3 * self.scale)]
+                    y[: (6 * self.scale + 1)] = 0
+                    y[-(6 * self.scale + 1) :] = 0
                     tname = "%s/%d/%s" % (self.track_name, idx, k)
-                    self.logger.info("%s track of %s at %d level has been created. " % (
-                        self.track_name, k, idx))
+                    self.logger.info(
+                        "%s track of %s at %d level has been created. "
+                        % (self.track_name, k, idx)
+                    )
                     if self.lock == None:
-                        with h5py.File(self.track_out, 'a') as tout:
+                        with h5py.File(self.track_out, "a") as tout:
                             tout.create_dataset(tname, data=y)
                     else:
                         with self.lock:
-                            with h5py.File(self.track_out, 'a') as tout:
+                            with h5py.File(self.track_out, "a") as tout:
                                 tout.create_dataset(tname, data=y)
 
 
@@ -108,11 +117,11 @@ class MakeMaxMinTrack(object):
         gc.collect()
         values.sort()
         a, b = (0, len(values) - 1)
-        while (values[a][2] == 1):
+        while values[a][2] == 1:
             a += 1
-        while (values[b][2] == 1):
+        while values[b][2] == 1:
             b -= 1
-        values = values[a:(b + 1)]
+        values = values[a : (b + 1)]
         for ix in where([i[2] == 1 for i in values])[0]:
             ia = ix - 1
             ib = ix + 1
@@ -122,17 +131,13 @@ class MakeMaxMinTrack(object):
             while values[ib][2] == 1:
                 print("There are not local minimar between two maximars")
                 ib += 1
-            self.values[chrom].extend(
-                [values[ia], values[ix], values[ib]]
-            )
+            self.values[chrom].extend([values[ia], values[ix], values[ib]])
         self.values[chrom].sort()
 
     def __getMax(self, vout, v0, v1, v2):
-        flags = where(
-            (v1[:-1] >= 0) & (v1[1:] <= 0) & (
-                (v2[:-1] < 0) & (v2[1:] < 0)
-            )
-        )[0]
+        flags = where((v1[:-1] >= 0) & (v1[1:] <= 0) & ((v2[:-1] < 0) & (v2[1:] < 0)))[
+            0
+        ]
         x = [[flags[0]]]
         for i in flags[1:]:
             if i - x[-1][-1] == 1:
@@ -144,20 +149,14 @@ class MakeMaxMinTrack(object):
                 idx = i[0] if v0[i[0]] > v0[i[0] + 1] else i[0] + 1
             else:
                 idx = max(i, key=lambda u: v0[u])
-            vout.append(
-                (idx, v0[idx], +1)
-            )
+            vout.append((idx, v0[idx], +1))
 
     def __getMin(self, vout, v0, v1, v2):
         for i in where(
-                (v1[:-1] <= 0) & (v1[1:] >= 0) & (
-                    ~((v2[:-1] == 0) & (v2[1:] == 0))
-                )
+            (v1[:-1] <= 0) & (v1[1:] >= 0) & (~((v2[:-1] == 0) & (v2[1:] == 0)))
         )[0]:
             idx = i if v0[i] < v0[i + 1] else i + 1
-            vout.append(
-                (idx, v0[idx], -1)
-            )
+            vout.append((idx, v0[idx], -1))
 
     def __call__(self):
         """
@@ -192,15 +191,24 @@ def make_max_min_track(track, diff_track):
         value = asarray(v)
         diff_value = asarray(diff_track[k])
         target_points = where(diff_value[1:] * diff_value[:-1] <= 0)[0]
-        flag = ~((diff_value[target_points] == 0) &
-                 (diff_value[target_points + 1] == 0))
+        flag = ~(
+            (diff_value[target_points] == 0) & (diff_value[target_points + 1] == 0)
+        )
         target_points = target_points[flag]
         target_max = target_points[diff_value[target_points] >= 0]
         target_min = target_points[diff_value[target_points + 1] >= 0]
-        target_max = [[i, value[i], +1] for i in target_max if
-                      diff_value[i] * diff_value[i + 1] < 0 or (diff_value[i] > 0 or diff_value[i + 1] < 0)]
-        target_min = [[i, value[i], -1] for i in target_min if
-                      diff_value[i] * diff_value[i + 1] < 0 or (diff_value[i] < 0 or diff_value[i + 1] > 0)]
+        target_max = [
+            [i, value[i], +1]
+            for i in target_max
+            if diff_value[i] * diff_value[i + 1] < 0
+            or (diff_value[i] > 0 or diff_value[i + 1] < 0)
+        ]
+        target_min = [
+            [i, value[i], -1]
+            for i in target_min
+            if diff_value[i] * diff_value[i + 1] < 0
+            or (diff_value[i] < 0 or diff_value[i + 1] > 0)
+        ]
         t = target_min + target_max
         t.sort(key=lambda u: u[0])
         df[k] = asarray(t)
@@ -245,14 +253,14 @@ def compare_with_max_not_in_peaks(track, peaks):
     """
     flags = {k: ones(v.shape[0], dtype=bool) for k, v in track.items()}
     for _, i in peaks.iterrows():
-        flags[i[0]][i["left"]:i["right"]] = False
-    npdis = {k: track[k][f & (track[k][:, 2] > 0), 1]
-             for k, f in flags.items()}
+        flags[i[0]][i["left"] : i["right"]] = False
+    npdis = {k: track[k][f & (track[k][:, 2] > 0), 1] for k, f in flags.items()}
     for v in npdis.values():
         v.sort()
     for k, v in track.items():
         z = asarray(
-            [searchsorted(npdis[k], v[:, 1], side="right") / float(len(npdis[k]))]).T
+            [searchsorted(npdis[k], v[:, 1], side="right") / float(len(npdis[k]))]
+        ).T
         track[k] = hstack((track[k], z))
     return track
 

@@ -17,6 +17,7 @@ from collections import Counter
 from sklearn.svm import OneClassSVM
 import logging
 from . import determine_dynamic
+from numpy import *
 
 logging.basicConfig(format="%(asctime)s: %(message)s", level=logging.ERROR)
 
@@ -47,14 +48,16 @@ class testing(object):
         self.times = []
 
 
-def __reads_in_peaks(sam_list,
-                     peak_chr,
-                     peak_start,
-                     peak_stop,
-                     frag_len,
-                     left_shift=+4,
-                     right_shift=-5,
-                     return_ends=True):
+def __reads_in_peaks(
+    sam_list,
+    peak_chr,
+    peak_start,
+    peak_stop,
+    frag_len,
+    left_shift=+4,
+    right_shift=-5,
+    return_ends=True,
+):
     """
     Read each sam file in sam_list and find fragments overlapped with given region denoted by peak_chr:peak_start-peak_stop,
         then report the positions of these fragments (shifted by left_shift and right_shift) and their shifted ends.
@@ -70,9 +73,7 @@ def __reads_in_peaks(sam_list,
             pos_start = max(0, peak_start - frag_len - 1)
             pos_stop = min(genome_size[peak_chr], peak_stop + frag_len + 1)
             rds = {}
-            for r2 in sam.fetch(contig=peak_chr,
-                                start=pos_start,
-                                stop=pos_stop):
+            for r2 in sam.fetch(contig=peak_chr, start=pos_start, stop=pos_stop):
                 try:
                     r1 = rds.pop(r2.query_name)
                     r1, r2 = r1, r2 if (r2.is_reverse) else (r2, r1)
@@ -136,17 +137,20 @@ def __calc_ov_frags(para):
     cand_cp = cand_mms.copy()
 
     # load read positions in this condidate region.
-    reads, read_ends = __reads_in_peaks(sam_list,
-                                        peak_chr,
-                                        peak_start,
-                                        peak_stop,
-                                        frag_len,
-                                        left_shift=left_shift,
-                                        right_shift=right_shift)
+    reads, read_ends = __reads_in_peaks(
+        sam_list,
+        peak_chr,
+        peak_start,
+        peak_stop,
+        frag_len,
+        left_shift=left_shift,
+        right_shift=right_shift,
+    )
 
     # Initialize to determine if the peak is dynamic.
     isDynamic = determine_dynamic.DetermineDynamics(
-        reads, smooth_file, (peak_chr, peak_start, peak_stop), dp)
+        reads, smooth_file, (peak_chr, peak_start, peak_stop), dp
+    )
 
     def fun(cand_pos, pos):
         """
@@ -156,9 +160,9 @@ def __calc_ov_frags(para):
         :return: array of found rows, sorted by its first column.
         """
         cand_pos = cand_pos.copy()
-        y = cand_pos[:searchsorted(cand_pos[:, 0], pos[0], side="right"), :]
+        y = cand_pos[: searchsorted(cand_pos[:, 0], pos[0], side="right"), :]
         y = asarray(sorted([list(i) for i in y], key=lambda a: a[1]))
-        z = y[searchsorted(y[:, 1], pos[1], side="left"):, :]
+        z = y[searchsorted(y[:, 1], pos[1], side="left") :, :]
         return asarray(sorted(z, key=lambda a: a[0]))
 
     # calculate expect values in this condidate regions.
@@ -193,29 +197,34 @@ def __calc_ov_frags(para):
         idx_c = cand_cp.shape[1] - 1
         L = record[5] - record[1] + 1
         p0 = sum(peak_length_dis[peak_length_dis.index >= L])
-        p = sum([
-            pl * double(l - L + 1) / double(l)
-            for l, pl in peak_length_dis.items() if l >= L
-        ])
+        p = sum(
+            [
+                pl * double(l - L + 1) / double(l)
+                for l, pl in peak_length_dis.items()
+                if l >= L
+            ]
+        )
         return [p0, p, binom(record[idx_a], p).sf(record[idx_c])]
 
     cand_cp[cand_cp.shape[1]] = cand_cp.apply(coverage_pvalue, axis=1)
-    cand_cp[cand_cp.shape[1]] = searchsorted(read_ends, cand_cp[4], side="right") - \
-                                searchsorted(read_ends, cand_cp[2], side="left")
+    cand_cp[cand_cp.shape[1]] = searchsorted(
+        read_ends, cand_cp[4], side="right"
+    ) - searchsorted(read_ends, cand_cp[2], side="left")
 
     def end_pvalue(record):
         idx = cand_cp.shape[1] - 1
         lmd = mean_end_per_base * (record[4] - record[2] + 1)
         return [
             lmd,
-            poisson(mean_end_per_base *
-                    (record[4] - record[2] + 1)).cdf(record[idx] - 1)
+            poisson(mean_end_per_base * (record[4] - record[2] + 1)).cdf(
+                record[idx] - 1
+            ),
         ]
 
     cand_cp[cand_cp.shape[1]] = cand_cp.apply(end_pvalue, axis=1)
-    cand_cp[cand_cp.shape[1]] = cand_cp.apply(lambda u: 1 - (1 - u[9][2]) *
-                                              (1 - u[11][1]),
-                                              axis=1)
+    cand_cp[cand_cp.shape[1]] = cand_cp.apply(
+        lambda u: 1 - (1 - u[9][2]) * (1 - u[11][1]), axis=1
+    )
 
     # Determine if the peak is dynamic.
     cand_cp[cand_cp.shape[1]] = [
@@ -225,23 +234,35 @@ def __calc_ov_frags(para):
     return cand_cp
 
 
-def calc_ov_frags(sam_list,
-                  cand_mm,
-                  peaks,
-                  frag_len,
-                  left_shift,
-                  right_shift,
-                  smooth_file,
-                  dynamic_pvalue=0.05,
-                  proc=1):
+def calc_ov_frags(
+    sam_list,
+    cand_mm,
+    peaks,
+    frag_len,
+    left_shift,
+    right_shift,
+    smooth_file,
+    dynamic_pvalue=0.05,
+    proc=1,
+):
     pool = mp.Pool(proc)
     cand_split = {}
     for _, record in cand_mm.iterrows():
         cand_split.setdefault(record[6], []).append(record)
     params = []
     for k, v in cand_split.items():
-        params.append((pd.DataFrame(v), peaks.loc[k, :], sam_list, frag_len,
-                       left_shift, right_shift, smooth_file, dynamic_pvalue))
+        params.append(
+            (
+                pd.DataFrame(v),
+                peaks.loc[k, :],
+                sam_list,
+                frag_len,
+                left_shift,
+                right_shift,
+                smooth_file,
+                dynamic_pvalue,
+            )
+        )
     y = (pool.map if proc > 1 else map)(__calc_ov_frags, params)
     pool.close()
     pool.join()
@@ -267,10 +288,7 @@ class FinalModeling(object):
         raw.columns = range(3)
         raw[1] = asarray(raw[1] + 1, dtype=int)
         raw[2] = asarray(raw[2] + 1, dtype=int)
-        raw.to_csv("%s_raw.bed" % self.outPrefix,
-                   header=None,
-                   sep="\t",
-                   index=None)
+        raw.to_csv("%s_raw.bed" % self.outPrefix, header=None, sep="\t", index=None)
         features = []
         index = []
         for key, value in self.raw_data.iterrows():
@@ -285,46 +303,49 @@ class FinalModeling(object):
                 else:
                     if value[12] <= self.pvalue:
                         index.append(key)
-                        features.append([
-                            log(abs(value[5] - value[1] - 156) / 157.0 + 1),
-                            log(float(value[8]) / value[7] / value[9][1]),
-                            log(value[10] / value[11][0])
-                        ])
+                        features.append(
+                            [
+                                log(abs(value[5] - value[1] - 156) / 157.0 + 1),
+                                log(float(value[8]) / value[7] / value[9][1]),
+                                log(value[10] / value[11][0]),
+                            ]
+                        )
                     else:
                         self.neg.append(key)
         self.raw_features = pd.DataFrame(features, index=index)
         neg = set(self.neg)
         naive = self.raw_data.loc[
-            [i for i in self.raw_data.index if not i in neg],
-            [0, 1, 5]].copy()
+            [i for i in self.raw_data.index if not i in neg], [0, 1, 5]
+        ].copy()
         naive[1] = asarray(naive[1] + 1, dtype=int)
         naive[5] = asarray(naive[5] + 1, dtype=int)
-        naive.to_csv("%s_naive.bed" % self.outPrefix,
-                     header=None,
-                     sep="\t",
-                     index=None)
+        naive.to_csv("%s_naive.bed" % self.outPrefix, header=None, sep="\t", index=None)
 
     def featureTransform(self):
         transFun = fun = lambda x: (x <= 0) * ((2 * norm(0, 1).pdf(0)) * x) + (
-            x > 0) * 2 * (norm(0, 1).cdf(x) - 0.5)
+            x > 0
+        ) * 2 * (norm(0, 1).cdf(x) - 0.5)
         self.transformed_features = pd.DataFrame(
-            index=self.raw_features.index, columns=self.raw_features.columns)
-        self.transformed_features[0] = self.raw_features[0] / std(
-            self.raw_features[0])
+            index=self.raw_features.index, columns=self.raw_features.columns
+        )
+        self.transformed_features[0] = self.raw_features[0] / std(self.raw_features[0])
         self.transformed_features[1] = transFun(
-            (self.raw_features[1] - mean(self.raw_features[1])) /
-            std(self.raw_features[1]))
+            (self.raw_features[1] - mean(self.raw_features[1]))
+            / std(self.raw_features[1])
+        )
         self.transformed_features[1] = self.transformed_features[1] / std(
-            self.transformed_features[1])
+            self.transformed_features[1]
+        )
         self.transformed_features[2] = transFun(
-            -(self.raw_features[2] - mean(self.raw_features[2])) /
-            std(self.raw_features[2]))
+            -(self.raw_features[2] - mean(self.raw_features[2]))
+            / std(self.raw_features[2])
+        )
         self.transformed_features[2] = self.transformed_features[2] / std(
-            self.transformed_features[2])
+            self.transformed_features[2]
+        )
 
     def svmFilter(self):
-        svm = OneClassSVM(nu=self.fraction,
-                          kernel="rbf").fit(self.transformed_features)
+        svm = OneClassSVM(nu=self.fraction, kernel="rbf").fit(self.transformed_features)
         y = svm.predict(self.transformed_features)
         for a, (b, c) in zip(y, self.transformed_features.iterrows()):
             if a > 0:
@@ -350,10 +371,7 @@ class FinalModeling(object):
         pos[7] = map(lambda u: u[2], self.raw_data.loc[self.pos, 9])
         pos[8] = map(lambda u: u[1], self.raw_data.loc[self.pos, 11])
         pos[9] = self.raw_data.loc[self.pos, 12]
-        pos.to_csv("%s_peaks.bed" % self.outPrefix,
-                   header=None,
-                   index=None,
-                   sep="\t")
+        pos.to_csv("%s_peaks.bed" % self.outPrefix, header=None, index=None, sep="\t")
 
     def run(self):
         self.getFeatures()

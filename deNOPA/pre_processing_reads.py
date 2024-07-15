@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 18-5-6 下午8:41
 # @Author  : Matrix
-# @Site    : 
+# @Site    :
 # @File    : pre_processing_reads.py
 # @Software: PyCharm
 from __future__ import print_function
@@ -10,6 +10,7 @@ import h5py
 import pysam
 from . import aid_scripts
 import gc
+from numpy import *
 
 
 class BAMUnsortedError(Exception):
@@ -21,17 +22,31 @@ class BAMUnsortedError(Exception):
         return "SAM/BAM file %s unsorted. " % s
 
 
-def test_make_singal_track(sam_file, signal_file, chrom_mask=(), shift_plus=4, shift_minus=-5, extend=5,
-                           chunk_size=10000):
+def test_make_singal_track(
+    sam_file,
+    signal_file,
+    chrom_mask=(),
+    shift_plus=4,
+    shift_minus=-5,
+    extend=5,
+    chunk_size=10000,
+):
     # Open a hdf5 file to store the signal tracts.
-    with h5py.File(signal_file, 'w') as hdf:
+    with h5py.File(signal_file, "w") as hdf:
         # Open the sam_file.
         with pysam.AlignmentFile(sam_file) as sam_in:
-            if "SO" in sam_in.header["HD"] and sam_in.header["HD"]["SO"] == "coordinate":
+            if (
+                "SO" in sam_in.header["HD"]
+                and sam_in.header["HD"]["SO"] == "coordinate"
+            ):
                 pass
             else:
                 raise BAMUnsortedError(sam_file)
-            sq = {k: sam_in.header.get_reference_length(k) for k in sam_in.header.references if not k in chrom_mask}
+            sq = {
+                k: sam_in.header.get_reference_length(k)
+                for k in sam_in.header.references
+                if not k in chrom_mask
+            }
             chrom_name = ""
             cov_sig = None
             site_sig = None
@@ -56,9 +71,13 @@ def test_make_singal_track(sam_file, signal_file, chrom_mask=(), shift_plus=4, s
                     r1, r2 = (r1, r2) if r2.is_reverse else (r2, r1)
                     p1 = r1.reference_start + shift_plus
                     p2 = r2.reference_end + shift_minus
-                    cov_sig[max(0, p1):min(p2 + 1, sq[r.reference_name])] += 1
-                    site_sig[max(0, p1 - extend):min(sq[r.reference_name], p1 + 1 + extend)] += 1
-                    site_sig[max(0, p2 - extend):min(sq[r.reference_name], p2 + 1 + extend)] += 1
+                    cov_sig[max(0, p1) : min(p2 + 1, sq[r.reference_name])] += 1
+                    site_sig[
+                        max(0, p1 - extend) : min(sq[r.reference_name], p1 + 1 + extend)
+                    ] += 1
+                    site_sig[
+                        max(0, p2 - extend) : min(sq[r.reference_name], p2 + 1 + extend)
+                    ] += 1
                     del rds[r.query_name]
                     idx += 1
                     print(idx)

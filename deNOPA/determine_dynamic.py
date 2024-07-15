@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2019/5/24 16:02
 # @Author  : Matrix
-# @Site    : 
+# @Site    :
 # @File    : determine_dynamic.py
 # @Software: PyCharm
 from __future__ import print_function
 from scipy import *
 import h5py
 from scipy.stats import binom
+from numpy import *
 
 
 class DetermineDynamics(object):
@@ -25,16 +26,12 @@ class DetermineDynamics(object):
         self.reads = reads - self.start
 
         # Load used tracks.
-        with h5py.File(smooth_file, 'r') as hdf:
-            self.s0 = asarray(hdf["sites/0"][self.chr][self.start:(self.stop + 1)])
-            self.s1 = asarray(hdf["sites/1"][self.chr][self.start:(self.stop + 1)])
-            self.s2 = asarray(hdf["sites/2"][self.chr][self.start:(self.stop + 1)])
-            self.right_edges = where(
-                (self.s2[:-1] <= 0) & (self.s2[1:] >= 0)
-            )[0]
-            self.left_edges = where(
-                (self.s2[:-1] >= 0) & (self.s2[1:] <= 0)
-            )[0]
+        with h5py.File(smooth_file, "r") as hdf:
+            self.s0 = asarray(hdf["sites/0"][self.chr][self.start : (self.stop + 1)])
+            self.s1 = asarray(hdf["sites/1"][self.chr][self.start : (self.stop + 1)])
+            self.s2 = asarray(hdf["sites/2"][self.chr][self.start : (self.stop + 1)])
+            self.right_edges = where((self.s2[:-1] <= 0) & (self.s2[1:] >= 0))[0]
+            self.left_edges = where((self.s2[:-1] >= 0) & (self.s2[1:] <= 0))[0]
 
     def __call__(self, peak):
         """

@@ -10,6 +10,7 @@ import numpy as np
 from scipy.stats import norm
 import gc
 import itertools as it
+from numpy import *
 
 
 def get_gauss_kernel0(scale):
@@ -43,16 +44,15 @@ def build_smooth_track(track_handle, out_put_file, scale):
     k0 = get_gauss_kernel0(scale)
     k1 = get_gauss_kernel1(scale)
     k2 = get_gauss_kernel2(scale)
-    with h5py.File(out_put_file, 'w') as fout:
+    with h5py.File(out_put_file, "w") as fout:
         for key, value in track_handle.items():
             hd = fout.create_dataset(key, shape=(3, len(value)))
             s = np.asarray(value)
             for idx, kn in enumerate([k0, k1, k2]):
                 print(key, idx)
-                y = np.convolve(s, kn,
-                                mode="full")[(3 * scale):(len(s) + 3 * scale)]
-                y[:(3 * scale)] = 0
-                y[-(3 * scale):] = 0
+                y = np.convolve(s, kn, mode="full")[(3 * scale) : (len(s) + 3 * scale)]
+                y[: (3 * scale)] = 0
+                y[-(3 * scale) :] = 0
                 hd[idx, :] = y
                 del y
                 gc.collect()
@@ -71,8 +71,9 @@ def find_max_and_min(handle):
         vmax = raw[cmax]
         vmin = raw[cmin]
         print("Raw value finish.")
-        a = [[k, v, 1] for k, v in zip(cmax, vmax)
-             ] + [[k, v, -1] for k, v in zip(cmin, vmin)]
+        a = [[k, v, 1] for k, v in zip(cmax, vmax)] + [
+            [k, v, -1] for k, v in zip(cmin, vmin)
+        ]
         a.sort(key=lambda u: u[0])
         print("Sort finish.")
         out[key] = np.asarray(a)

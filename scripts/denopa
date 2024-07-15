@@ -9,77 +9,80 @@ import os, sys
 import deNOPA
 import argparse
 
+
 parser = argparse.ArgumentParser(
-    description=
-    "Decoding the nucleosome positions with ATAC-seq data at single cell level"
+    description="Decoding the nucleosome positions with ATAC-seq data at single cell level"
 )
 parser.add_argument(
     "-i",
     "--input",
-    help=
-    "The input bam files. The files should be sorted. This argument could be given multiple times for multiple input files.",
+    help="The input bam files. The files should be sorted. This argument could be given multiple times for multiple input files.",
     action="append",
-    required=True)
+    required=True,
+)
 parser.add_argument(
     "-o",
     "--output",
-    help=
-    "The directory where the output files will go to. It will be created if not exists (default .).",
-    default=".")
+    help="The directory where the output files will go to. It will be created if not exists (default .).",
+    default=".",
+)
 parser.add_argument(
     "-b",
     "--bufferSize",
     help="Number of reads buffered in reading the bam file (default 1000000).",
     type=int,
-    default=1000000)
+    default=1000000,
+)
 parser.add_argument(
     "-s",
     "--chromSkip",
-    help=
-    "Names of chromosomes skiped from the processing. Multiple values should be sepaated by ',' (default chrY,chrM).",
-    default="chrM,chrY")
+    help="Names of chromosomes skiped from the processing. Multiple values should be sepaated by ',' (default chrY,chrM).",
+    default="chrM,chrY",
+)
 
 parser.add_argument(
     "-c",
     "--chromInclude",
-    help=
-    "The regular expression of chromosome names included in the analysis, for human genome 'chr[1-9][0-9]{,1}|chrX' should be enough. It can be combined with -s.",
-    default="chr[1-9][0-9]{,1}|chrX")
+    help="The regular expression of chromosome names included in the analysis, for human genome 'chr[1-9][0-9]{,1}|chrX' should be enough. It can be combined with -s.",
+    default="chr[1-9][0-9]{,1}|chrX",
+)
 
-parser.add_argument("-n",
-                    "--name",
-                    help="The name of the project (default deNOPA). ",
-                    default="deNOPA"),
+parser.add_argument(
+    "-n", "--name", help="The name of the project (default deNOPA). ", default="deNOPA"
+),
 parser.add_argument(
     "-m",
     "--maxLen",
     help="The maximun fragment length in the input files (default 2000). ",
     type=int,
-    default=2000)
+    default=2000,
+)
 parser.add_argument(
     "--proc",
     help="Number of processors used in the analysis (default 1).",
     type=int,
-    default=1)
+    default=1,
+)
 parser.add_argument(
     "-p",
     "--pARER",
-    help=
-    "The p-value threshold used in determining the ATAC-seq reads enriched regions (ARERs, default 0.1)",
+    help="The p-value threshold used in determining the ATAC-seq reads enriched regions (ARERs, default 0.1)",
     type=float,
-    default=0.1)
+    default=0.1,
+)
 parser.add_argument(
     "-q",
     "--qNFR",
-    help=
-    "The q-value threshold used in determining the nucleosome free regions (NFRs, default 0.1).",
+    help="The q-value threshold used in determining the nucleosome free regions (NFRs, default 0.1).",
     type=float,
-    default=0.1)
+    default=0.1,
+)
 parser.add_argument(
     "-r",
     "--removeIntermediateFiles",
     help="The intermediate files will be removed if this flag is set.",
-    action="store_true")
+    action="store_true",
+)
 
 
 def main():
@@ -87,25 +90,29 @@ def main():
     if not os.path.isdir(args.output):
         os.makedirs(args.output)
     chromSkip = set([i.strip() for i in args.chromSkip.split(",")])
-    deNOPA.makeSignalTracks(args.input,
-                            args.output,
-                            args.name,
-                            bufferSize=args.bufferSize,
-                            chromInculde=args.chromInclude,
-                            chromSkip=args.chromSkip)
-    deNOPA.candidateNucleosomes(args.input,
-                                args.name,
-                                args.output,
-                                maxLen=args.maxLen,
-                                proc=args.proc,
-                                candPvalue=args.pARER,
-                                nfrQvalue=args.qNFR,
-                                arerFile="%s_ARERs.txt" % args.name)
+    deNOPA.makeSignalTracks(
+        args.input,
+        args.output,
+        args.name,
+        bufferSize=args.bufferSize,
+        chromInculde=args.chromInclude,
+        chromSkip=args.chromSkip,
+    )
+    deNOPA.candidateNucleosomes(
+        args.input,
+        args.name,
+        args.output,
+        maxLen=args.maxLen,
+        proc=args.proc,
+        candPvalue=args.pARER,
+        nfrQvalue=args.qNFR,
+        arerFile="%s_ARERs.txt" % args.name,
+    )
     if args.removeIntermediateFiles:
         file_kept = [
             "%s_nucleosomes.txt" % args.name,
             "%s_ARERs.txt" % args.name,
-            "%s_NFR.txt" % args.name
+            "%s_NFR.txt" % args.name,
         ]
         for i in os.listdir(args.output):
             if not i in file_kept:
