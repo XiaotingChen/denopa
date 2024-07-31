@@ -25,5 +25,11 @@ setup(
     python_requires=">=2.7",
     packages=['deNOPA'],
     install_requires=[
-        "numpy", "scipy", "pandas", "h5py", "pysam", "scikit-learn", "statsmodels"
+        "numpy",
+        "scipy==1.11.2",
+        "pandas",
+        "h5py",
+        "pysam",
+        "scikit-learn",
+        "statsmodels"
     ])
