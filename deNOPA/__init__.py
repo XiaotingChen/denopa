@@ -21,10 +21,13 @@ import h5py
 import pickle as pk
 import multiprocessing as mp
 from numpy import *
-
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+import pickle
 
 def makeSignalTracks(
-    filesIn, folderOut, pname, bufferSize=1000000, chromSkip="", chromInculde=""
+    filesIn, folderOut, pname, bufferSize=1000000, chromSkip="", chromInculde="",nuc_number=0,
 ):
     lock = mp.Lock()
     filesIn = [os.path.abspath(i) for i in filesIn]
@@ -38,7 +41,24 @@ def makeSignalTracks(
     )
     with open("%s_frag_len.pkl" % pname, "wb") as fout:
         pk.dump(fl, fout)
-    fl = fragmentLengthsDist.fragmentLengthModel(fl)
+    # fl plot
+    fl_df = pd.DataFrame.from_dict(fl, orient='index')
+    fl_df.sort_index(inplace=True)
+    fl_df.reset_index(inplace=True)
+    fl_df.rename(axis=1, mapper={'index': 'fl', 0: 'count'}, inplace=True)
+    plt.subplots(figsize=(15, 5))
+    sns.lineplot(fl_df, x='fl', y='count')
+    plt.savefig('fl.pdf', bbox_inches='tight')
+    # fl model
+    fl = fragmentLengthsDist.fragmentLengthModel(fl,nuc_number)
+    # export model
+    if nuc_number!=0:
+        with open('nuc_{}_model'.format(nuc_number), 'wb') as f:
+            pickle.dump(fl, f)
+    else:
+        with open('best_AIC_model', 'wb') as f:
+            pickle.dump(fl, f)
+
     fl.nucFreeTrack(
         filesIn,
         "%s_pileup_signal.hdf" % pname,

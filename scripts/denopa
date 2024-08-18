@@ -83,7 +83,21 @@ parser.add_argument(
     help="The intermediate files will be removed if this flag is set.",
     action="store_true",
 )
-
+parser.add_argument(
+    "-nuc_number",
+    "--nuc_number",
+    help="Number of nucleosomes to model, 0 to enable AIC-based model selection",
+    type=int,
+    default=0,
+    action="store",
+)
+parser.add_argument(
+    "-fl_est_only",
+    "--fl_est_only",
+    help="Only enable fragment length estimation",
+    default=False,
+    action="store_true",
+)
 
 def main():
     args = parser.parse_args()
@@ -97,26 +111,28 @@ def main():
         bufferSize=args.bufferSize,
         chromInculde=args.chromInclude,
         chromSkip=args.chromSkip,
+        nuc_number=args.nuc_number
     )
-    deNOPA.candidateNucleosomes(
-        args.input,
-        args.name,
-        args.output,
-        maxLen=args.maxLen,
-        proc=args.proc,
-        candPvalue=args.pARER,
-        nfrQvalue=args.qNFR,
-        arerFile="%s_ARERs.txt" % args.name,
-    )
-    if args.removeIntermediateFiles:
-        file_kept = [
-            "%s_nucleosomes.txt" % args.name,
-            "%s_ARERs.txt" % args.name,
-            "%s_NFR.txt" % args.name,
-        ]
-        for i in os.listdir(args.output):
-            if not i in file_kept:
-                os.remove(os.path.join(args.output, i))
+    if args.fl_est_only!=True:
+        deNOPA.candidateNucleosomes(
+            args.input,
+            args.name,
+            args.output,
+            maxLen=args.maxLen,
+            proc=args.proc,
+            candPvalue=args.pARER,
+            nfrQvalue=args.qNFR,
+            arerFile="%s_ARERs.txt" % args.name,
+        )
+        if args.removeIntermediateFiles:
+            file_kept = [
+                "%s_nucleosomes.txt" % args.name,
+                "%s_ARERs.txt" % args.name,
+                "%s_NFR.txt" % args.name,
+            ]
+            for i in os.listdir(args.output):
+                if not i in file_kept:
+                    os.remove(os.path.join(args.output, i))
     return
 
 

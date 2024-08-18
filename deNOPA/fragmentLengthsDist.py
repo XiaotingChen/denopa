@@ -250,12 +250,16 @@ class EMSmoothFragLenDist(object):
         proc.join()
 
 
-def fragmentLengthModel(fl):
-    candModel = []
-    for i in range(3, 10):
-        try:
-            m = EMSmoothFragLenDist(fl, i)()
-            candModel.append(m)
-        except Exception as ex:
-            pass
-    return max(candModel, key=lambda k: k.AIC())
+def fragmentLengthModel(fl,nuc_number=0):
+    if nuc_number==0:
+        candModel = []
+        for i in range(3, 10):
+            try:
+                m = EMSmoothFragLenDist(fl, i)()
+                candModel.append(m)
+            except Exception as ex:
+                pass
+        return max(candModel, key=lambda k: k.AIC())
+    else:
+        m = EMSmoothFragLenDist(fl, nuc_number)()
+        return m
