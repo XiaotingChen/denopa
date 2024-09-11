@@ -263,3 +263,13 @@ def fragmentLengthModel(fl,nuc_number=0):
     else:
         m = EMSmoothFragLenDist(fl, nuc_number)()
         return m
+
+def fix_parameters(parameters):
+    import numpy as np
+    fixed_parameters=[]
+    for idx in range(2):
+        fixed_parameters.append(parameters[idx])
+    order = np.argsort(parameters[2])
+    for idx in range(2,5):
+        fixed_parameters.append(list(np.array(parameters[idx])[list(order)]))
+    return tuple(fixed_parameters)

@@ -111,7 +111,8 @@ def main():
         bufferSize=args.bufferSize,
         chromInculde=args.chromInclude,
         chromSkip=args.chromSkip,
-        nuc_number=args.nuc_number
+        nuc_number=args.nuc_number,
+        fl_est_only=args.fl_est_only
     )
     if args.fl_est_only!=True:
         deNOPA.candidateNucleosomes(

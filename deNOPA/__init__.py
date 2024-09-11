@@ -27,7 +27,7 @@ import pandas as pd
 import pickle
 
 def makeSignalTracks(
-    filesIn, folderOut, pname, bufferSize=1000000, chromSkip="", chromInculde="",nuc_number=0,
+    filesIn, folderOut, pname, bufferSize=1000000, chromSkip="", chromInculde="",nuc_number=0,fl_est_only=False
 ):
     lock = mp.Lock()
     filesIn = [os.path.abspath(i) for i in filesIn]
@@ -58,32 +58,34 @@ def makeSignalTracks(
     else:
         with open('best_AIC_model', 'wb') as f:
             pickle.dump(fl, f)
-
-    fl.nucFreeTrack(
-        filesIn,
-        "%s_pileup_signal.hdf" % pname,
-        "%s_smooth.hdf" % pname,
-        chrom_inculde=chromInculde,
-        chromSkip=chromSkip,
-    )
-    proc1 = signal_track_builder.GaussConvolve(
-        "%s_pileup_signal.hdf" % pname,
-        "%s_smooth.hdf" % pname,
-        "coverage",
-        72,
-        lock=lock,
-    )
-    proc2 = signal_track_builder.GaussConvolve(
-        "%s_pileup_signal.hdf" % pname, "%s_smooth.hdf" % pname, "sites", 24, lock=lock
-    )
-    # proc3 = signal_track_builder.GaussConvolve("pileup_signal.hdf", "smooth.hdf", "short", 72)
-    proc1.start()
-    proc2.start()
-    proc1.join()
-    proc2.join()
-    # proc3.start()
-    # proc3.join()
-    os.chdir(pwd)
+    with open('deNOPA_param','wb') as f:
+        pickle.dump(fragmentLengthsDist.fix_parameters(fl.params),f)
+    if fl_est_only==False:
+        fl.nucFreeTrack(
+            filesIn,
+            "%s_pileup_signal.hdf" % pname,
+            "%s_smooth.hdf" % pname,
+            chrom_inculde=chromInculde,
+            chromSkip=chromSkip,
+        )
+        proc1 = signal_track_builder.GaussConvolve(
+            "%s_pileup_signal.hdf" % pname,
+            "%s_smooth.hdf" % pname,
+            "coverage",
+            72,
+            lock=lock,
+        )
+        proc2 = signal_track_builder.GaussConvolve(
+            "%s_pileup_signal.hdf" % pname, "%s_smooth.hdf" % pname, "sites", 24, lock=lock
+        )
+        # proc3 = signal_track_builder.GaussConvolve("pileup_signal.hdf", "smooth.hdf", "short", 72)
+        proc1.start()
+        proc2.start()
+        proc1.join()
+        proc2.join()
+        # proc3.start()
+        # proc3.join()
+        os.chdir(pwd)
     return
 
 
