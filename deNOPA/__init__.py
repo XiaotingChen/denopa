@@ -25,9 +25,10 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 import pickle
+import copy
 
 def makeSignalTracks(
-    filesIn, folderOut, pname, bufferSize=1000000, chromSkip="", chromInculde="",nuc_number=0,fl_est_only=False
+    filesIn, folderOut, pname, bufferSize=1000000, chromSkip="", chromInculde="",nuc_number=0,fl_est_only=False,fragLenCutOff=0
 ):
     lock = mp.Lock()
     filesIn = [os.path.abspath(i) for i in filesIn]
@@ -37,7 +38,7 @@ def makeSignalTracks(
         filesIn,
         "%s_pileup_signal" % pname,
         chrom_skip=chromSkip,
-        chrom_inculde=chromInculde,
+        chrom_inculde=chromInculde
     )
     with open("%s_frag_len.pkl" % pname, "wb") as fout:
         pk.dump(fl, fout)
@@ -49,8 +50,12 @@ def makeSignalTracks(
     plt.subplots(figsize=(15, 5))
     sns.lineplot(fl_df, x='fl', y='count')
     plt.savefig('fl.pdf', bbox_inches='tight')
+    # remove fragment count below cutoff
+    fl_threshold=copy.copy(fl)
+    for l in range(fragLenCutOff):
+        _=fl_threshold.pop(l,None)
     # fl model
-    fl = fragmentLengthsDist.fragmentLengthModel(fl,nuc_number)
+    fl = fragmentLengthsDist.fragmentLengthModel(fl_threshold,nuc_number)
     # export model
     if nuc_number!=0:
         with open('nuc_{}_model'.format(nuc_number), 'wb') as f:

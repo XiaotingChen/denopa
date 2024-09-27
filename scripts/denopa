@@ -98,6 +98,14 @@ parser.add_argument(
     default=False,
     action="store_true",
 )
+parser.add_argument(
+    "-fragLenCutOff",
+    "--fragLenCutOff",
+    help="Use only fragments with length meeting the cutoff for parameter estimation, default: 0 (use all fragments)",
+    default=0,
+    action="store",
+    type=int,
+)
 
 def main():
     args = parser.parse_args()
@@ -112,7 +120,8 @@ def main():
         chromInculde=args.chromInclude,
         chromSkip=args.chromSkip,
         nuc_number=args.nuc_number,
-        fl_est_only=args.fl_est_only
+        fl_est_only=args.fl_est_only,
+        fragLenCutOff=args.fragLenCutOff
     )
     if args.fl_est_only!=True:
         deNOPA.candidateNucleosomes(
