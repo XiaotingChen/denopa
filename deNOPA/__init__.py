@@ -53,7 +53,7 @@ def makeSignalTracks(
     # remove fragment count below cutoff
     fl_threshold=copy.copy(fl)
     for l in range(fragLenCutOff):
-        _=fl_threshold.pop(l,None)
+        fl_threshold[l]=0
     # fl model
     fl = fragmentLengthsDist.fragmentLengthModel(fl_threshold,nuc_number)
     # export model
