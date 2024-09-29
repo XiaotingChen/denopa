@@ -30,7 +30,7 @@ class EMSmoothFragLenDist(object):
     Note: here the fragment lengths has been shifted.
     """
 
-    def __init__(self, fl, n_nucleo):
+    def __init__(self, fl, n_nucleo,nucfree_dist_family='gamma'):
         self.n_nuc = n_nucleo
         self.nums = deepcopy(pd.Series(fl))
         self.fl = deepcopy(pd.Series(fl))
@@ -47,6 +47,7 @@ class EMSmoothFragLenDist(object):
             asarray([0.9 / self.n_nuc for i in range(self.n_nuc)]),
         ]
         self.rp = None
+        self.nucfree_dist_family=nucfree_dist_family
 
     def total_pmf(self, para):
         alpha, mu, mus, sigmas, ps = para
@@ -97,7 +98,10 @@ class EMSmoothFragLenDist(object):
         mu = sum(x * freq * gm[0]) / sum(freq * gm[0])
         xb = log(mu)
         bx = sum(log(x) * freq * gm[0]) / sum(freq * gm[0])
-        alpha = self.estimate_alpha(bx, xb)
+        if self.nucfree_dist_family=='gamma':
+            alpha = self.estimate_alpha(bx, xb)
+        else:
+            alpha = 1.0
         mu = mu / alpha
         mus = [sum(x * freq * k) / sum(freq * k) for k in gm[1:]]
         sigmas = [
@@ -250,18 +254,18 @@ class EMSmoothFragLenDist(object):
         proc.join()
 
 
-def fragmentLengthModel(fl,nuc_number=0):
+def fragmentLengthModel(fl,nuc_number=0,nucfree_dist_family='gamma'):
     if nuc_number==0:
         candModel = []
         for i in range(3, 10):
             try:
-                m = EMSmoothFragLenDist(fl, i)()
+                m = EMSmoothFragLenDist(fl, i,nucfree_dist_family)()
                 candModel.append(m)
             except Exception as ex:
                 pass
         return max(candModel, key=lambda k: k.AIC())
     else:
-        m = EMSmoothFragLenDist(fl, nuc_number)()
+        m = EMSmoothFragLenDist(fl, nuc_number,nucfree_dist_family)()
         return m
 
 def fix_parameters(parameters):

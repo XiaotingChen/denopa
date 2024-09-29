@@ -12,7 +12,7 @@ with open("README.md") as fin:
 
 setup(
     name="deNOPA",
-    version="1.0.3.2",
+    version="1.0.3.3",
     author="Bingxiang Xu",
     author_email="xubingxiang@sus.edu.cn",
     maintainer="Zhihua Zhang",

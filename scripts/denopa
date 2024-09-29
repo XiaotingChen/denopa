@@ -101,10 +101,18 @@ parser.add_argument(
 parser.add_argument(
     "-fragLenCutOff",
     "--fragLenCutOff",
-    help="Use only fragments with length meeting the cutoff for parameter estimation, default: 0 (use all fragments)",
+    help="Use only fragments with length meeting the cutoff for parameter estimation, default: 0 (use all fragments), -1 for auto mode",
     default=0,
     action="store",
     type=int,
+)
+parser.add_argument(
+    "-nucfree_dist_family",
+    "--nucfree_dist_family",
+    help="Set nucleosome-free region distribution family",
+    choices=['exp','gamma'],
+    action="store",
+    default='gamma'
 )
 
 def main():
@@ -121,7 +129,8 @@ def main():
         chromSkip=args.chromSkip,
         nuc_number=args.nuc_number,
         fl_est_only=args.fl_est_only,
-        fragLenCutOff=args.fragLenCutOff
+        fragLenCutOff=args.fragLenCutOff,
+        nucfree_dist_family=args.nucfree_dist_family
     )
     if args.fl_est_only!=True:
         deNOPA.candidateNucleosomes(

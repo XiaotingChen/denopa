@@ -28,7 +28,16 @@ import pickle
 import copy
 
 def makeSignalTracks(
-    filesIn, folderOut, pname, bufferSize=1000000, chromSkip="", chromInculde="",nuc_number=0,fl_est_only=False,fragLenCutOff=0
+    filesIn,
+    folderOut,
+    pname,
+    bufferSize=1000000,
+    chromSkip="",
+    chromInculde="",
+    nuc_number=0,
+    fl_est_only=False,
+    fragLenCutOff=0,
+    nucfree_dist_family="gamma",
 ):
     lock = mp.Lock()
     filesIn = [os.path.abspath(i) for i in filesIn]
@@ -50,12 +59,15 @@ def makeSignalTracks(
     plt.subplots(figsize=(15, 5))
     sns.lineplot(fl_df, x='fl', y='count')
     plt.savefig('fl.pdf', bbox_inches='tight')
+    if fragLenCutOff==-1:
+        auto_fragLenCutOff=fl_df['count'].argmax()
+        fragLenCutOff=auto_fragLenCutOff
     # remove fragment count below cutoff
     fl_threshold=copy.copy(fl)
     for l in range(fragLenCutOff):
         fl_threshold[l]=0
     # fl model
-    fl = fragmentLengthsDist.fragmentLengthModel(fl_threshold,nuc_number)
+    fl = fragmentLengthsDist.fragmentLengthModel(fl_threshold,nuc_number,nucfree_dist_family)
     # export model
     if nuc_number!=0:
         with open('nuc_{}_model'.format(nuc_number), 'wb') as f:
